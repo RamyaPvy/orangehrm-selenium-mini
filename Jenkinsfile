@@ -1,38 +1,50 @@
 pipeline {
-  agent { label 'Jenkin-Agent' }
+  agent { label 'Jenkin-Agent' }        // must match your agent's label exactly
+
   tools {
-    jdk 'JDK17'
-    maven 'MAven3'
+    jdk   'JDK17'                        // must match name in Manage Jenkins → Tools
+    maven 'Maven3'                       // case-sensitive; change if your tool is named differently
   }
-  stages{
-    stage("Cleanup workspace"){
-           steps {
-           cleanWs()
-           }
-    }
-    stage("Checkout from SCM"){
-           steps {
-           git branch: 'main' , credentialsId: 'github' , url: 'https://github.com/RamyaPvy/orangehrm-selenium-mini'
-           }
-    
+
+  environment {
+    CI = 'true'                          // headless mode + no slow pauses
+  }
+
+  stages {
+
+    stage('Cleanup workspace') {
+      steps {
+        // Requires "Workspace Cleanup" plugin. If missing, use: deleteDir()
+        cleanWs()
+      }
     }
 
-    stages{
-    stage("Build Application"){
-           steps {
-           sh "mvn clean package"
-           }
+    stage('Checkout from SCM') {
+      steps {
+        git branch: 'main',
+            credentialsId: 'github',     // must match your Jenkins credentials ID
+            url: 'https://github.com/RamyaPvy/orangehrm-selenium-mini.git'
+      }
     }
 
-stages{
-    stage("Test Application"){
-           steps {
-           sh "mvn test"
-           }
+    stage('Build & Test') {
+      steps {
+        sh 'mvn -B -q clean test'        // use sh on Ubuntu agents; use bat on Windows
+      }
     }
-      
-    
+
+    stage('Reports') {
+      steps {
+        junit allowEmptyResults: true, testResults: '**/surefire-reports/*.xml'
+        archiveArtifacts artifacts: '**/surefire-reports/**, **/test-output/**', fingerprint: true
+      }
+    }
+
   }
-  
+
+  post {
+    always {
+      echo 'Pipeline finished ✅'
+    }
+  }
 }
-
