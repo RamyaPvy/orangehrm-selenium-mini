@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'Jenkins-Agent' }     // must match your node label
+  agent any      // must match your node label
 
   // If you mapped tool locations on the agent: Java17 -> /usr/lib/jvm/java-17-openjdk-amd64, Maven3 -> /usr/share/maven
   tools {
