@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'Jenkin-Agent' }        // must match your agent's label exactly
+  agent { label 'Jenkins-Agent' }        // must match your agent's label exactly
 
   tools {
     jdk   'Java17'                        // must match name in Manage Jenkins → Tools
