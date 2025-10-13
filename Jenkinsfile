@@ -2,17 +2,17 @@ pipeline {
   agent { label 'Jenkins-Agent' }  // or: agent any
 
   tools {
-    jdk   'Java17'   // must match Manage Jenkins → Global Tool Configuration
+    jdk   'Java17'     // matches Manage Jenkins → Global Tool Configuration
     maven 'Maven3'
   }
 
   environment {
-    CI = 'true'      // your tests can switch to headless when CI=true
+    CI = 'true'        // your tests can switch to headless when CI=true
   }
 
   options {
     timestamps()
-    // If AnsiColor plugin installed, keep this; otherwise comment it out.
+    // Comment this line if AnsiColor plugin isn't installed
     ansiColor('xterm')
   }
 
@@ -20,7 +20,6 @@ pipeline {
 
     stage('Pre-flight: Versions') {
       steps {
-        // This step doesn’t need bash -lc, so we keep it simple
         sh '''
 echo "== Java =="
 java -version || true
@@ -34,7 +33,7 @@ git --version || true
 
     stage('Cleanup workspace') {
       steps {
-        // Uses Workspace Cleanup plugin you installed
+        // If you ever remove Workspace Cleanup plugin, replace with deleteDir()
         cleanWs()
       }
     }
@@ -49,13 +48,13 @@ git --version || true
 
     stage('Build & Test') {
       steps {
-        // 🔴 IMPORTANT: Force bash for this step to allow `set -o pipefail`
-        sh 'bash -lc "set -euxo pipefail; ' +
-                     'echo Cleaning any leftover Chrome/Chromedriver...; ' +
-                     'pkill -f chromedriver || true; ' +
-                     'pkill -f \\"chrome --\\" || true; ' +
-                     'echo Running Maven tests...; ' +
-                     'mvn -B -q clean test"'
+        // 🔒 Wrap the ENTIRE script in bash -lc and a single multi-line string
+        sh '''bash -lc "
+set -euxo pipefail
+
+echo Running Maven tests...
+mvn -B -q clean test
+"'''
       }
     }
 
