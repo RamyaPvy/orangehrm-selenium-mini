@@ -17,7 +17,21 @@ pipeline {
   }
 
   stages {
+stage('Pre-flight: Versions') {
+      steps {
+        sh '''#!/usr/bin/env bash
+set -euo pipefail
+echo "== Java =="
+java -version || true
+echo "== Maven =="
+mvn -v || true
+echo "== Git =="
+git --version || true
+        '''
+      }
+    }
 
+    
     stage('Cleanup workspace') {
       steps {
         // If you don't have the Workspace Cleanup plugin, replace cleanWs() with deleteDir()
